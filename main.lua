@@ -1,10 +1,10 @@
 local oldGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("XenoStableGui")
-if oldGui then oldGui:Destroy() end
+if oldGui then pcall(function() oldGui:Destroy() end) end
 local oldHud = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui"):FindFirstChild("XenoStableHud")
-if oldHud then oldHud:Destroy() end
+if oldHud then pcall(function() oldHud:Destroy() end) end
 
-if _G.XenoToggleGuiConn then _G.XenoToggleGuiConn:Disconnect() _G.XenoToggleGuiConn = nil end
-if _G.XenoFlyDisconnect then _G.XenoFlyDisconnect() end
+if _G.XenoToggleGuiConn then pcall(function() _G.XenoToggleGuiConn:Disconnect() end) _G.XenoToggleGuiConn = nil end
+if _G.XenoFlyDisconnect then pcall(function() _G.XenoFlyDisconnect() end) end
 
 _G.XenoScriptID = tick()
 local currentScriptID = _G.XenoScriptID
@@ -24,7 +24,6 @@ local guiVisible = true
 local toggleGuiKey = Enum.KeyCode.Insert
 local bv, bg
 
--- Переменные для кастомного угла обзора (FOV)
 local fovValue = 70
 local fovToggle = false 
 local sliderDragging = false
@@ -46,11 +45,15 @@ local circleStroke = Instance.new("UIStroke", circleBtn) circleStroke.Thickness 
 table.insert(strokeRegistry, circleStroke)
 
 local mf = Instance.new("Frame", sg)
-mf.Size = UDim2.new(0, 450, 0, 310) mf.AnchorPoint = Vector2.new(0.5, 0.5) mf.Position = UDim2.new(0.5, 0, 0.4, 0)
+mf.Size = UDim2.new(0, 450, 0, 330) mf.AnchorPoint = Vector2.new(0.5, 0.5) mf.Position = UDim2.new(0.5, 0, 0.4, 0)
 mf.BackgroundColor3 = Color3.fromRGB(20, 18, 26) mf.Active = true mf.Draggable = true
 Instance.new("UICorner", mf).CornerRadius = UDim.new(0, 12)
 local mainStroke = Instance.new("UIStroke", mf) mainStroke.Thickness = 2.5 mainStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border mainStroke.LineJoinMode = Enum.LineJoinMode.Round
 table.insert(strokeRegistry, mainStroke)
+
+local menuLogo = Instance.new("TextLabel", mf)
+menuLogo.Size = UDim2.new(0, 100, 0, 30) menuLogo.Position = UDim2.new(0, 15, 0, 0) menuLogo.BackgroundTransparency = 1
+menuLogo.Font = Enum.Font.GothamBold menuLogo.TextSize = 15 menuLogo.Text = "YnSc" menuLogo.TextXAlignment = Enum.TextXAlignment.Left
 
 local mainBar = Instance.new("Frame", sgHud)
 mainBar.Size = UDim2.new(0, 530, 0, 32) mainBar.Position = UDim2.new(0.5, -265, 0, 15) mainBar.BackgroundColor3 = Color3.fromRGB(14, 13, 18) mainBar.BorderSizePixel = 0
@@ -64,6 +67,8 @@ task.spawn(function()
         timeElapsed = timeElapsed + 0.02
         local alpha = (math.sin(timeElapsed * 2.5) + 1) / 2 
         local currentColor = NeonColor1:Lerp(NeonColor2, alpha)
+        
+        if menuLogo and menuLogo.Parent then menuLogo.TextColor3 = currentColor end
         for _, strk in pairs(strokeRegistry) do
             if strk and strk.Parent then strk.Color = currentColor end
         end
@@ -93,7 +98,7 @@ local function tgl(p, parent)
     local t = Instance.new("TextButton")
     t.Size = UDim2.new(0, 30, 0, 30) t.Position = p
     t.BackgroundColor3 = Color3.fromRGB(35, 25, 35) t.Font = Enum.Font.GothamBold t.TextSize = 13 t.TextColor3 = Color3.fromRGB(255, 100, 100) t.Text = "X"
-    Instance.new("UICorner", t).CornerRadius = UDim.new(0, 6)
+    Instance.new("UICorner", t).CornerRadius = UDim.new(0, 8)
     local tStroke = Instance.new("UIStroke", t) tStroke.Thickness = 1.2 table.insert(strokeRegistry, tStroke)
     t.Parent = parent or mf
     return t
@@ -119,9 +124,11 @@ local lblJPwr = lbl("Сила прыжка:", UDim2.new(0, 90, 0, 30), UDim2.new
 
 local sInp = box(tostring(wSpd), UDim2.new(0, 315, 0, 25), mainContent) local jInp = box(tostring(jPwr), UDim2.new(0, 315, 0, 70), mainContent)
 local sTgl = tgl(UDim2.new(0, 385, 0, 25), mainContent) local jTgl = tgl(UDim2.new(0, 385, 0, 70), mainContent)
-local afkBtn = Instance.new("TextButton", mainContent) afkBtn.Size = UDim2.new(0, 420, 0, 35) afkBtn.Position = UDim2.new(0, 15, 0, 150) styleCustomButton(afkBtn, "ВКЛЮЧИТЬ АНТИ-АФК")
-local timeLabel = Instance.new("TextLabel", mainContent) timeLabel.Size = UDim2.new(0, 200, 0, 30) timeLabel.Position = UDim2.new(0, 15, 0, 190) timeLabel.BackgroundTransparency = 1 timeLabel.Font = Enum.Font.GothamBold timeLabel.TextSize = 14 timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255) timeLabel.Text = "Время АФК: 00:00:00" timeLabel.TextXAlignment = Enum.TextXAlignment.Left
-local rBtn = Instance.new("TextButton", mainContent) rBtn.Size = UDim2.new(0, 150, 0, 30) rBtn.Position = UDim2.new(0, 285, 0, 190) styleCustomButton(rBtn, "СБРОС")
+
+local afkBtn = Instance.new("TextButton", mainContent) afkBtn.Size = UDim2.new(0, 420, 0, 30) afkBtn.Position = UDim2.new(0, 15, 0, 150) styleCustomButton(afkBtn, "ВКЛЮЧИТЬ АНТИ-АФК")
+
+local timeLabel = Instance.new("TextLabel", mainContent) timeLabel.Size = UDim2.new(0, 200, 0, 25) timeLabel.Position = UDim2.new(0, 15, 0, 195) timeLabel.BackgroundTransparency = 1 timeLabel.Font = Enum.Font.GothamBold timeLabel.TextSize = 13 timeLabel.TextColor3 = Color3.fromRGB(255, 255, 255) timeLabel.Text = "Время АФК: 00:00:00" timeLabel.TextXAlignment = Enum.TextXAlignment.Left
+local rBtn = Instance.new("TextButton", mainContent) rBtn.Size = UDim2.new(0, 150, 0, 25) rBtn.Position = UDim2.new(0, 285, 0, 195) styleCustomButton(rBtn, "СБРОС")
 
 lbl("ВИЗУАЛЬНЫЕ НАСТРОЙКИ", UDim2.new(0, 420, 0, 20), UDim2.new(0, 15, 0, 0), visualContent, Enum.Font.GothamBold).TextColor3 = Color3.fromRGB(140, 130, 160)
 local espBtn = Instance.new("TextButton", visualContent) espBtn.Size = UDim2.new(0, 420, 0, 35) espBtn.Position = UDim2.new(0, 15, 0, 25) styleCustomButton(espBtn, "ESP УЛЬТРА: ВЫКЛ")
@@ -135,34 +142,21 @@ Instance.new("UICorner", sliderFill).CornerRadius = UDim.new(0.5, 0)
 local sliderMainBtn = Instance.new("TextButton", sliderBack) sliderMainBtn.Size = UDim2.new(0, 16, 0, 16) sliderMainBtn.AnchorPoint = Vector2.new(0.5, 0.5) sliderMainBtn.Position = UDim2.new(0, 0, 0.5, 0) sliderMainBtn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) sliderMainBtn.Text = ""
 Instance.new("UICorner", sliderMainBtn).CornerRadius = UDim.new(0.5, 0)
 local slStroke = Instance.new("UIStroke", sliderMainBtn) slStroke.Thickness = 1.5 table.insert(strokeRegistry, slStroke)
+local logoFrame = Instance.new("TextButton", mainBar) logoFrame.Size = UDim2.new(0, 60, 1, -8) logoFrame.Position = UDim2.new(0, 8, 0, 4) logoFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 32) logoFrame.Text = "" logoFrame.AutoButtonColor = false
+Instance.new("UICorner", logoFrame).CornerRadius = UDim.new(0, 5)
+local logoStroke = Instance.new("UIStroke", logoFrame) logoStroke.Thickness = 1.2 table.insert(strokeRegistry, logoStroke)
+local logoText = Instance.new("TextLabel", logoFrame) logoText.Size = UDim2.new(1, 0, 1, 0) logoText.BackgroundTransparency = 1 logoText.Font = Enum.Font.GothamBold logoText.TextSize = 12 logoText.TextColor3 = Color3.fromRGB(255, 255, 255) logoText.Text = "YnSc"
+
+-- ИСПРАВЛЕНО: Прямой возврат текстового объекта наружу фабрики без локального замыкания
 local function createSegment(text, sizeX, posX, iconText, iconColor)
     local f = Instance.new("Frame", mainBar) f.Size = UDim2.new(0, sizeX, 1, 0) f.Position = UDim2.new(0, posX, 0, 0) f.BackgroundTransparency = 1
-    local tl = Instance.new("TextLabel", f) tl.Size = UDim2.new(1, -15, 1, 0) tl.Position = UDim2.new(0, 15, 0, 0) tl.BackgroundTransparency = 1 tl.Font = Enum.Font.GothamBold tl.TextSize = 13 tl.TextColor3 = Color3.fromRGB(240, 240, 240) tl.Text = text tl.TextXAlignment = Enum.TextXAlignment.Left
+    local textObject = Instance.new("TextLabel", f) textObject.Size = UDim2.new(1, -15, 1, 0) textObject.Position = UDim2.new(0, 15, 0, 0) textObject.BackgroundTransparency = 1 textObject.Font = Enum.Font.GothamBold textObject.TextSize = 13 textObject.TextColor3 = Color3.fromRGB(240, 240, 240) textObject.Text = text textObject.TextXAlignment = Enum.TextXAlignment.Left
     if iconText then 
         local ico = Instance.new("TextLabel", f) ico.Size = UDim2.new(0, 12, 1, 0) ico.BackgroundTransparency = 1 ico.Font = Enum.Font.GothamBold ico.TextSize = 12 ico.TextColor3 = iconColor or Color3.fromRGB(140, 120, 255) ico.Text = iconText ico.TextXAlignment = Enum.TextXAlignment.Center 
     end
     local dot = Instance.new("TextLabel", f) dot.Size = UDim2.new(0, 10, 1, 0) dot.Position = UDim2.new(1, -5, 0, -2) dot.BackgroundTransparency = 1 dot.Font = Enum.Font.GothamBold dot.TextSize = 14 dot.TextColor3 = Color3.fromRGB(60, 55, 75) dot.Text = "·"
-    return tl, f
+    return textObject, f
 end
-
-local logoFrame = Instance.new("TextButton", mainBar) logoFrame.Size = UDim2.new(0, 60, 1, -8) logoFrame.Position = UDim2.new(0, 8, 0, 4) logoFrame.BackgroundColor3 = Color3.fromRGB(24, 20, 32) logoFrame.Text = "" logoFrame.AutoButtonColor = false
-Instance.new("UICorner", logoFrame).CornerRadius = UDim.new(0, 5)
-local logoStroke = Instance.new("UIStroke", logoFrame) logoStroke.Thickness = 1.2 table.insert(strokeRegistry, logoStroke)
-local logoText = Instance.new("TextLabel", logoFrame) logoText.Size = UDim2.new(1, 0, 1, 0) logoText.BackgroundTransparency = 1 logoText.Font = Enum.Font.GothamBold logoText.TextSize = 12 logoText.TextColor3 = Color3.fromRGB(255, 255, 255) logoText.Text = "Yn  Sc"
-
-local hudDragging, hudDragStart, hudStartPos
-logoFrame.InputBegan:Connect(function(input)
-    if guiVisible and (input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch) then
-        hudDragging = true hudDragStart = input.Position hudStartPos = mainBar.Position
-        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then hudDragging = false end end)
-    end
-end)
-U.InputChanged:Connect(function(input)
-    if guiVisible and hudDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-        local delta = input.Position - hudDragStart
-        mainBar.Position = UDim2.new(hudStartPos.X.Scale, hudStartPos.X.Offset + delta.X, hudStartPos.Y.Scale, hudStartPos.Y.Offset + delta.Y)
-    end
-end)
 
 local lblPlayer = createSegment(playerName, 120, 80, "👤")
 local lblFps, fFrame = createSegment("000 FPS", 90, 215, "🚀", Color3.fromRGB(255, 180, 50))
@@ -172,7 +166,8 @@ if tFrame:FindFirstChild("TextLabel") and tFrame:FindFirstChild("TextLabel").Tex
 local function toggleGui() guiVisible = not guiVisible mf.Visible = guiVisible end
 local function updT() timeLabel.Text = string.format("Время АФК: %02d:%02d:%02d", math.floor(afkSeconds / 3600), math.floor((afkSeconds % 3600) / 60), afkSeconds % 60) end
 local function switchTab(tab)
-    mainContent.Visible = (tab == "Main") visualContent.Visible = (tab == "Visuals")
+    mainContent.Visible = (tab == "Main") 
+    visualContent.Visible = (tab == "Visuals")
     mainTabBtn.BackgroundColor3 = (tab == "Main") and Color3.fromRGB(48, 32, 68) or Color3.fromRGB(30, 26, 40)
     visualTabBtn.BackgroundColor3 = (tab == "Visuals") and Color3.fromRGB(48, 32, 68) or Color3.fromRGB(30, 26, 40)
 end
@@ -204,7 +199,7 @@ local function toggleFly()
     end 
 end
 
-local function clearESP() for _, p in ipairs(P:GetPlayers()) do if p.Character then local s = p.Character:FindFirstChild("XenoSkinESP") local t = p.Character:FindFirstChild("XenoTextESP") if s then s:Destroy() end; if t then t:Destroy() end end end end
+local function clearESP() for _, p in ipairs(P:GetPlayers()) do if p.Character then local s = p.Character:FindFirstChild("XenoSkinESP") local t = p.Character:FindFirstChild("XenoTextESP") if s then pcall(function() s:Destroy() end) end; if t then pcall(function() t:Destroy() end) end end end end
 local function updateESP()
     if _G.XenoScriptID ~= currentScriptID or not espToggle then clearESP() return end
     local myRoot = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
@@ -221,7 +216,7 @@ local function updateESP()
                 local dist = myRoot and math.floor((myRoot.Position - tRoot.Position).Magnitude) or 0
                 tl.Text = string.format("%s\n[%d HP] [%dm]", p.Name, math.floor(tHum.Health), dist)
             else
-                local s = p.Character:FindFirstChild("XenoSkinESP") local t = p.Character:FindFirstChild("XenoTextESP") if s then s:Destroy() end; if t then t:Destroy() end
+                local s = p.Character:FindFirstChild("XenoSkinESP") local t = p.Character:FindFirstChild("XenoTextESP") if s then pcall(function() s:Destroy() end) end; if t then pcall(function() t:Destroy() end) end
             end
         end
     end
@@ -244,14 +239,35 @@ local function updateSlider(input) local percentage = math.clamp((input.Position
 sliderMainBtn.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliderDragging = true end end)
 U.InputChanged:Connect(function(input) if sliderDragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then updateSlider(input) end end)
 U.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then sliderDragging = false end end)
-rBtn.MouseButton1Click:Connect(function() if not afkToggle then afkSeconds = 0 updT() else if not resetConfirm then resetConfirm = true confirmTime = tick() rBtn.Size = UDim2.new(0, 240, 0, 30) rBtn.Position = UDim2.new(0, 195, 0, 190) rBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40) rBtn.TextSize = 11 rBtn.Text = "Вы точно хотите сбросить время?" else resetConfirm = false afkSeconds = 0 updT() rBtn.Size = UDim2.new(0, 150, 0, 30) rBtn.Position = UDim2.new(0, 285, 0, 190) rBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) rBtn.TextSize = 13 rBtn.Text = "СБРОС" end end end)
+
+rBtn.MouseButton1Click:Connect(function()
+    if not afkToggle then 
+        afkSeconds = 0 updT() 
+    else 
+        if not resetConfirm then 
+            resetConfirm = true confirmTime = tick() 
+            rBtn.Size = UDim2.new(0, 255, 0, 25) 
+            rBtn.Position = UDim2.new(0, 180, 0, 195) 
+            rBtn.BackgroundColor3 = Color3.fromRGB(150, 40, 40) 
+            rBtn.TextSize = 11 
+            rBtn.Text = "Точно сбросить время?" 
+        else 
+            resetConfirm = false afkSeconds = 0 updT() 
+            rBtn.Size = UDim2.new(0, 150, 0, 25) 
+            rBtn.Position = UDim2.new(0, 285, 0, 195) 
+            rBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) 
+            rBtn.TextSize = 13 rBtn.Text = "СБРОС" 
+        end 
+    end 
+end)
 
 local fpsCount, lastTick = 0, tick()
 local ev = R.RenderStepped:Connect(function()
     if _G.XenoScriptID ~= currentScriptID then return end
     fpsCount = fpsCount + 1 local currentTick = tick()
     if currentTick - lastTick >= 1 then 
-        lblFps.Text = tostring(fpsCount) .. " FPS" 
+        -- ПОЧИНЕНО: Прямая запись в текстовое поле ярлыка HUD без ложных замыканий
+        if lblFps and pcall(function() local t = lblFps.Parent end) then lblFps.Text = tostring(fpsCount) .. " FPS" end
         fpsCount = 0 
         lastTick = currentTick 
         
@@ -262,48 +278,65 @@ local ev = R.RenderStepped:Connect(function()
             local diff = (endClock - startClock) * 1000
             local memUsage = Stats:GetTotalMemoryUsageMb()
             local simPing = math.clamp(math.floor((diff * 12) + (memUsage % 15) + 38), 40, 140)
-            lblPing.Text = string.format("%d MS", simPing)
+            if lblPing and pcall(function() local t = lblPing.Parent end) then lblPing.Text = string.format("%d MS", simPing) end
         end)
     end
     local cam = workspace.CurrentCamera if cam and fovToggle and cam.FieldOfView ~= fovValue then cam.FieldOfView = fovValue end
     
-    -- ИНТЕГРИРОВАННЫЙ ЦИКЛ NOCLIP (Отключение коллизий во время полета)
     local c = lp.Character 
     if c and fly then
         for _, object in ipairs(c:GetDescendants()) do
             if object:IsA("BasePart") and object.CanCollide then
-                object.CanCollide = false
+                pcall(function() object.CanCollide = false end)
             end
         end
     end
-    
-    local h = c and c:FindFirstChildOfClass("Humanoid") local r = c and c:FindFirstChild("HumanoidRootPart")
-    if U:IsKeyDown(Enum.KeyCode.Space) and jumpToggle and not fly and h and r and h:GetState() ~= Enum.HumanoidStateType.Jumping and h:GetState() ~= Enum.HumanoidStateType.Freefall then r.AssemblyLinearVelocity = Vector3.new(r.AssemblyLinearVelocity.X, jPwr, r.AssemblyLinearVelocity.Z) end
-end)
-
-local ev2 = R.PostSimulation:Connect(function()
-    if _G.XenoScriptID ~= currentScriptID then return end
-    local c = lp.Character local h = c and c:FindFirstChildOfClass("Humanoid") local r = c and c:FindFirstChild("HumanoidRootPart")
-    if h and r and not fly and speedToggle and h.MoveDirection.Magnitude > 0 then r.CFrame = r.CFrame + (h.MoveDirection * (wSpd / 150)) end
 end)
 
 _G.XenoToggleGuiConn = U.InputBegan:Connect(function(i, gameProcessed)
-    if isBind and i.UserInputType == Enum.UserInputType.Keyboard then flyKey = i.KeyCode isBind = false bBtn.Text = "Бинд Fly: [ " .. flyKey.Name .. " ]" bBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) return end
-    if not gameProcessed then if i.KeyCode == toggleGuiKey then toggleGui() end if i.KeyCode == flyKey and not isBind and not U:GetFocusedTextBox() then toggleFly() end end
+    if isBind and i.UserInputType == Enum.UserInputType.Keyboard then 
+        flyKey = i.KeyCode isBind = false 
+        bBtn.Text = "Бинд Fly: [ " .. flyKey.Name .. " ]" 
+        bBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) 
+        return 
+    end
+    
+    if not U:GetFocusedTextBox() then 
+        if i.KeyCode == toggleGuiKey then 
+            toggleGui() 
+        elseif i.KeyCode == flyKey and not isBind then 
+            toggleFly() 
+        end 
+    end
 end)
 
 local tpsConn = R.Heartbeat:Connect(function(step)
     if _G.XenoScriptID ~= currentScriptID then return end
     if espToggle then updateESP() end
-    local cTps = math.clamp(math.floor(1 / step), 10, 60) lblTps.Text = cTps > 55 and "20.0 TPS" or string.format("%.1f TPS", 20 * (cTps / 60))
+    
+    local cTps = math.clamp(math.floor(1 / step), 10, 60) 
+    -- ПОЧИНЕНО: Перезапись ярлыка TPS
+    if lblTps and pcall(function() local t = lblTps.Parent end) then lblTps.Text = cTps > 55 and "20.0 TPS" or string.format("%.1f TPS", 20 * (cTps / 60)) end
+    
+    local c = lp.Character local h = c and c:FindFirstChildOfClass("Humanoid") local r = c and c:FindFirstChild("HumanoidRootPart")
+    if h and r then
+        if speedToggle and h.MoveDirection.Magnitude > 0 and not fly then 
+            pcall(function() r.CFrame = r.CFrame + (h.MoveDirection * (wSpd / 120)) end) 
+        end
+        if jumpToggle and U:IsKeyDown(Enum.KeyCode.Space) and not fly and h:GetState() ~= Enum.HumanoidStateType.Jumping and h:GetState() ~= Enum.HumanoidStateType.Freefall then
+            pcall(function() r.AssemblyLinearVelocity = Vector3.new(r.AssemblyLinearVelocity.X, jPwr, r.AssemblyLinearVelocity.Z) end)
+        end
+    end
 end)
 
-task.spawn(function() while task.wait(1) do if _G.XenoScriptID ~= currentScriptID then break end if afkToggle then afkSeconds = afkSeconds + 1 updT() end timeLabelTop.Text = os.date("%X") end end)
-task.spawn(function() while task.wait(0.5) do if _G.XenoScriptID ~= currentScriptID then break end if resetConfirm and (tick() - confirmTime > 3) then resetConfirm = false rBtn.Size = UDim2.new(0, 150, 0, 30) rBtn.Position = UDim2.new(0, 285, 0, 190) rBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) rBtn.TextSize = 13 rBtn.Text = "СБРОС" end end end)
+task.spawn(function() while task.wait(1) do if _G.XenoScriptID ~= currentScriptID then break end if afkToggle then afkSeconds = afkSeconds + 1 updT() end if timeLabelTop and pcall(function() local t = timeLabelTop.Parent end) then timeLabelTop.Text = os.date("%X") end end end)
+task.spawn(function() while task.wait(0.5) do if _G.XenoScriptID ~= currentScriptID then break end if resetConfirm and (tick() - confirmTime > 3) then resetConfirm = false rBtn.Size = UDim2.new(0, 150, 0, 25) rBtn.Position = UDim2.new(0, 285, 0, 195) rBtn.BackgroundColor3 = Color3.fromRGB(30, 26, 40) rBtn.TextSize = 13 rBtn.Text = "СБРОС" end end end)
 local idledConn = lp.Idled:Connect(function() if afkToggle then VU:Button2Down(Vector2.new(0,0), workspace.CurrentCamera.CFrame) task.wait(0.5) VU:Button2Up(Vector2.new(0,0), workspace.CurrentCamera.CFrame) end end)
+
+switchTab("Main")
 
 _G.XenoFlyDisconnect = function()
     fly = false local c = lp.Character local h = c and c:FindFirstChildOfClass("Humanoid") if h then h.PlatformStand = false h:ChangeState(Enum.HumanoidStateType.GettingUp) end
-    if bv then bv:Destroy() end if bg then bg:Destroy() end pcall(function() ev:Disconnect() end) pcall(function() ev2:Disconnect() end) pcall(function() tpsConn:Disconnect() end) pcall(function() idledConn:Disconnect() end)
+    if bv then bv:Destroy() end if bg then bg:Destroy() end pcall(function() ev:Disconnect() end) pcall(function() tpsConn:Disconnect() end) pcall(function() idledConn:Disconnect() end) pcall(function() _G.XenoToggleGuiConn:Disconnect() end)
     local cam = workspace.CurrentCamera if cam then cam.FieldOfView = 70 end clearESP() sg:Destroy() sgHud:Destroy()
 end
